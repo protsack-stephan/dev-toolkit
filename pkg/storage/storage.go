@@ -7,6 +7,7 @@ import (
 
 // Storage list of storage interfaces
 type Storage interface {
+	Lister
 	Walker
 	Creator
 	Getter
@@ -14,6 +15,11 @@ type Storage interface {
 	Linker
 	Deleter
 	Stater
+}
+
+// Lister get the contents of the path
+type Lister interface {
+	List(path string) ([]string, error)
 }
 
 // Walker recursively look for files in directory

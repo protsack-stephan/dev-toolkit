@@ -9,7 +9,7 @@ import (
 
 const seqTestKey = "test/sequence"
 
-var seqTestSleep = time.Millisecond * 100
+var seqTestSleep = time.Millisecond * 90
 var seqTestWait = time.Millisecond * 50
 
 func TestSequential(t *testing.T) {

@@ -28,6 +28,12 @@ func TestStorage(t *testing.T) {
 	assert := assert.New(t)
 	assert.Nil(testStorage(store))
 
+	t.Run("List path's content", func(t *testing.T) {
+		content, err := store.List("/")
+		assert.NoError(err)
+		assert.Equal(content, []string{storageTestWalkPath})
+	})
+
 	t.Run("walk path", func(t *testing.T) {
 		assert.NoError(store.Walk("/", func(path string) {
 			assert.Equal(storageTestWalkPath, path)

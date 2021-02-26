@@ -15,6 +15,11 @@ func NewMock() *Mock {
 // Mock storage object for testing
 type Mock struct{}
 
+// List get the contents of the path
+func (Mock) List(path string) ([]string, error) {
+	return []string{}, nil
+}
+
 // Walk recursively look for files in directory
 func (Mock) Walk(path string, callback func(path string)) error {
 	return nil
