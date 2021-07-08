@@ -6,6 +6,7 @@ package s3
 import (
 	"errors"
 	"io"
+	pathTool "path"
 	"strings"
 	"time"
 
@@ -40,7 +41,7 @@ type Storage struct {
 
 // List reads the path content
 // Note: it is not better performant than Walk because it still
-// itterates over all objects in a path
+// iterates over all objects in a path
 func (s *Storage) List(path string) ([]string, error) {
 	var result []string
 	res, err := s.s3.ListObjects(&s3.ListObjectsInput{
@@ -68,6 +69,28 @@ func (s *Storage) List(path string) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+// ListDelimiterPages reads the path content with a delimiter by pages
+func (s *Storage) ListDelimiterPages(path string, delimiter string) ([]string, error) {
+	var result []string
+	err := s.s3.ListObjectsPages(
+		&s3.ListObjectsInput{
+			Bucket:    aws.String(s.bucket),
+			Prefix:    aws.String(path),
+			Delimiter: aws.String(delimiter),
+		},
+		// handle bulks of 1000 keys
+		func(page *s3.ListObjectsOutput, lastPage bool) bool {
+			for _, prefix := range page.CommonPrefixes {
+				result = append(result, pathTool.Base(*prefix.Prefix))
+			}
+
+			return true
+		},
+	)
+
+	return result, err
 }
 
 // Walk recursively look for files in directory
