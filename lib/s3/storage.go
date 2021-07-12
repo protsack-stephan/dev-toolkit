@@ -40,8 +40,8 @@ type Storage struct {
 }
 
 // List reads the path content or prefixes.
-func (s *Storage) List(path string, options ...map[string]interface{}) (*[]string, error) {
-	result := new([]string)
+func (s *Storage) List(path string, options ...map[string]interface{}) ([]string, error) {
+	var result []string
 
 	input := s3.ListObjectsInput{
 		Bucket: aws.String(s.bucket),
@@ -71,28 +71,28 @@ func (s *Storage) List(path string, options ...map[string]interface{}) (*[]strin
 	return result, err
 }
 
-func contents(result *[]string, res *s3.ListObjectsOutput) *[]string {
+func contents(result []string, res *s3.ListObjectsOutput) []string {
 	for _, object := range res.Contents {
 		// Check whether the object is nested in a path
 		p := strings.Split(*object.Key, "/")
 
 		if len(p) == 1 {
 			// It's a file
-			*result = append(*result, *object.Key)
-		} else if (*result)[len(p)-1] != p[0] {
+			result = append(result, *object.Key)
+		} else if result[len(p)-1] != p[0] {
 			// It's a folder
 			// And it is not added yet
 			// res.Contents is sorted so if p[0] is not unique it would appear last in the result
-			*result = append(*result, p[0])
+			result = append(result, p[0])
 		}
 	}
 
 	return result
 }
 
-func prefixes(result *[]string, res *s3.ListObjectsOutput) *[]string {
+func prefixes(result []string, res *s3.ListObjectsOutput) []string {
 	for _, prefix := range res.CommonPrefixes {
-		*result = append(*result, pathTool.Base(*prefix.Prefix))
+		result = append(result, pathTool.Base(*prefix.Prefix))
 	}
 
 	return result

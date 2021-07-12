@@ -19,7 +19,7 @@ type Storage interface {
 
 // Lister get the contents of the path
 type Lister interface {
-	List(path string, options ...map[string]interface{}) (*[]string, error)
+	List(path string, options ...map[string]interface{}) ([]string, error)
 }
 
 // Walker recursively look for files in directory
