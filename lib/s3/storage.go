@@ -39,51 +39,29 @@ type Storage struct {
 	s3       *s3.S3
 }
 
-// List reads the path content
-// Note: it is not better performant than Walk because it still
-// iterates over all objects in a path
-func (s *Storage) List(path string) ([]string, error) {
-	var result []string
-	res, err := s.s3.ListObjects(&s3.ListObjectsInput{
+// List reads the path content or prefixes.
+func (s *Storage) List(path string, options ...map[string]interface{}) (*[]string, error) {
+	result := new([]string)
+
+	input := s3.ListObjectsInput{
 		Bucket: aws.String(s.bucket),
 		Prefix: aws.String(path),
-	})
-
-	if err != nil {
-		return result, err
 	}
 
-	for _, object := range res.Contents {
-		// Check whether the object is nested in a path
-		p := strings.Split(*object.Key, "/")
-
-		if len(p) == 1 {
-			// It's a file
-			result = append(result, *object.Key)
-		} else if result[len(p)-1] != p[0] {
-			// It's a folder
-			// And it is not added yet
-			// res.Contents is sorted so if p[0] is not unique it would appear last in the result
-			result = append(result, p[0])
+	if len(options) > 0 {
+		if options[0]["delimiter"] != nil {
+			input.SetDelimiter(options[0]["delimiter"].(string))
 		}
 	}
 
-	return result, nil
-}
-
-// ListDelimiterPages reads the path content with a delimiter by pages
-func (s *Storage) ListDelimiterPages(path string, delimiter string) ([]string, error) {
-	var result []string
 	err := s.s3.ListObjectsPages(
-		&s3.ListObjectsInput{
-			Bucket:    aws.String(s.bucket),
-			Prefix:    aws.String(path),
-			Delimiter: aws.String(delimiter),
-		},
+		&input,
 		// handle bulks of 1000 keys
-		func(page *s3.ListObjectsOutput, lastPage bool) bool {
-			for _, prefix := range page.CommonPrefixes {
-				result = append(result, pathTool.Base(*prefix.Prefix))
+		func(res *s3.ListObjectsOutput, _ bool) bool {
+			if input.Delimiter != nil {
+				result = prefixes(result, res)
+			} else {
+				result = contents(result, res)
 			}
 
 			return true
@@ -91,6 +69,33 @@ func (s *Storage) ListDelimiterPages(path string, delimiter string) ([]string, e
 	)
 
 	return result, err
+}
+
+func contents(result *[]string, res *s3.ListObjectsOutput) *[]string {
+	for _, object := range res.Contents {
+		// Check whether the object is nested in a path
+		p := strings.Split(*object.Key, "/")
+
+		if len(p) == 1 {
+			// It's a file
+			*result = append(*result, *object.Key)
+		} else if (*result)[len(p)-1] != p[0] {
+			// It's a folder
+			// And it is not added yet
+			// res.Contents is sorted so if p[0] is not unique it would appear last in the result
+			*result = append(*result, p[0])
+		}
+	}
+
+	return result
+}
+
+func prefixes(result *[]string, res *s3.ListObjectsOutput) *[]string {
+	for _, prefix := range res.CommonPrefixes {
+		*result = append(*result, pathTool.Base(*prefix.Prefix))
+	}
+
+	return result
 }
 
 // Walk recursively look for files in directory
@@ -112,7 +117,7 @@ func (s *Storage) Walk(path string, callback func(path string)) error {
 }
 
 // Create for create interface
-func (s *Storage) Create(path string) (io.ReadWriteCloser, error) {
+func (s *Storage) Create(_ string) (io.ReadWriteCloser, error) {
 	return nil, errors.New("method unimplemented")
 }
 
