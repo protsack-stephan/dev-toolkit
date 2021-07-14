@@ -6,6 +6,7 @@ package s3
 import (
 	"errors"
 	"io"
+	pathTool "path"
 	"strings"
 	"time"
 
@@ -38,19 +39,40 @@ type Storage struct {
 	s3       *s3.S3
 }
 
-// List reads the path content
-// Note: it is not better performant than Walk because it still
-// itterates over all objects in a path
-func (s *Storage) List(path string) ([]string, error) {
+// List reads the path content or prefixes.
+func (s *Storage) List(path string, options ...map[string]interface{}) ([]string, error) {
 	var result []string
-	res, err := s.s3.ListObjects(&s3.ListObjectsInput{
+
+	input := s3.ListObjectsInput{
 		Bucket: aws.String(s.bucket),
 		Prefix: aws.String(path),
-	})
-
-	if err != nil {
-		return result, err
 	}
+
+	if len(options) > 0 {
+		if options[0]["delimiter"] != nil {
+			input.SetDelimiter(options[0]["delimiter"].(string))
+		}
+	}
+
+	err := s.s3.ListObjectsPages(
+		&input,
+		// handle bulks of 1000 keys
+		func(res *s3.ListObjectsOutput, _ bool) bool {
+			if input.Delimiter != nil {
+				result = append(result, prefixes(res)...)
+			} else {
+				result = append(result, contents(res)...)
+			}
+
+			return true
+		},
+	)
+
+	return result, err
+}
+
+func contents(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
 
 	for _, object := range res.Contents {
 		// Check whether the object is nested in a path
@@ -67,7 +89,17 @@ func (s *Storage) List(path string) ([]string, error) {
 		}
 	}
 
-	return result, nil
+	return result
+}
+
+func prefixes(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
+
+	for _, prefix := range res.CommonPrefixes {
+		result = append(result, pathTool.Base(*prefix.Prefix))
+	}
+
+	return result
 }
 
 // Walk recursively look for files in directory
@@ -89,7 +121,7 @@ func (s *Storage) Walk(path string, callback func(path string)) error {
 }
 
 // Create for create interface
-func (s *Storage) Create(path string) (io.ReadWriteCloser, error) {
+func (s *Storage) Create(_ string) (io.ReadWriteCloser, error) {
 	return nil, errors.New("method unimplemented")
 }
 

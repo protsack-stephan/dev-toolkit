@@ -36,7 +36,7 @@ type Storage struct {
 }
 
 // List reads the path content
-func (s Storage) List(path string) ([]string, error) {
+func (s Storage) List(path string, options ...map[string]interface{}) ([]string, error) {
 	dir, err := s.fullPath(path)
 	if err != nil {
 		return []string{}, err

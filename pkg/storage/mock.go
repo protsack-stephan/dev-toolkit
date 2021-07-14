@@ -16,7 +16,7 @@ func NewMock() *Mock {
 type Mock struct{}
 
 // List get the contents of the path
-func (Mock) List(path string) ([]string, error) {
+func (Mock) List(path string, options ...map[string]interface{}) ([]string, error) {
 	return []string{}, nil
 }
 
