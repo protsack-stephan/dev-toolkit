@@ -59,9 +59,9 @@ func (s *Storage) List(path string, options ...map[string]interface{}) ([]string
 		// handle bulks of 1000 keys
 		func(res *s3.ListObjectsOutput, _ bool) bool {
 			if input.Delimiter != nil {
-				result = prefixes(result, res)
+				result = append(result, prefixes(res)...)
 			} else {
-				result = contents(result, res)
+				result = append(result, contents(res)...)
 			}
 
 			return true
@@ -71,7 +71,9 @@ func (s *Storage) List(path string, options ...map[string]interface{}) ([]string
 	return result, err
 }
 
-func contents(result []string, res *s3.ListObjectsOutput) []string {
+func contents(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
+
 	for _, object := range res.Contents {
 		// Check whether the object is nested in a path
 		p := strings.Split(*object.Key, "/")
@@ -90,7 +92,9 @@ func contents(result []string, res *s3.ListObjectsOutput) []string {
 	return result
 }
 
-func prefixes(result []string, res *s3.ListObjectsOutput) []string {
+func prefixes(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
+
 	for _, prefix := range res.CommonPrefixes {
 		result = append(result, pathTool.Base(*prefix.Prefix))
 	}
