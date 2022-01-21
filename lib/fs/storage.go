@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -51,6 +52,11 @@ func (s Storage) List(path string, options ...map[string]interface{}) ([]string,
 	return d.Readdirnames(-1)
 }
 
+// ListWithContext reads the path content
+func (s Storage) ListWithContext(ctx context.Context, path string, options ...map[string]interface{}) ([]string, error) {
+	return s.List(path, options...)
+}
+
 // Walk recursively look for files in directory
 func (s Storage) Walk(path string, callback func(path string)) error {
 	loc, err := s.fullPath(path)
@@ -78,6 +84,11 @@ func (s Storage) Walk(path string, callback func(path string)) error {
 			return nil
 		},
 	})
+}
+
+// WalkWithContext recursively look for files in directory
+func (s Storage) WalkWithContext(ctx context.Context, path string, callback func(path string)) error {
+	return s.Walk(path, callback)
 }
 
 // Create create new file or open existing one and truncate it
@@ -113,6 +124,11 @@ func (s Storage) Get(path string) (io.ReadCloser, error) {
 	return os.Open(loc)
 }
 
+// GetWithContext get object from storage
+func (s Storage) GetWithContext(ctx context.Context, path string) (io.ReadCloser, error) {
+	return s.Get(path)
+}
+
 // Put object into storage
 func (s Storage) Put(path string, body io.Reader) error {
 	loc, err := s.fullPath(path)
@@ -141,6 +157,11 @@ func (s Storage) Put(path string, body io.Reader) error {
 	return ioutil.WriteFile(loc, buff, 0766)
 }
 
+// PutWithContext object into storage
+func (s Storage) PutWithContext(ctx context.Context, path string, body io.Reader) error {
+	return s.Put(path, body)
+}
+
 // Link generate expiration link for storage
 func (s Storage) Link(path string, expire time.Duration) (string, error) {
 	return s.fullPath(path)
@@ -155,6 +176,11 @@ func (s *Storage) Delete(path string) error {
 	}
 
 	return os.Remove(loc)
+}
+
+// DeleteWithContext remove object from storage
+func (s *Storage) DeleteWithContext(path string) error {
+	return s.Delete(path)
 }
 
 // Stat ge file information
