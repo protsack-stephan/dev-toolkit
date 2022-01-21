@@ -39,7 +39,7 @@ type Walker interface {
 
 // WalkerWithContext recursively look for files in directory
 type WalkerWithContext interface {
-	WalkWithContext(path string, callback func(path string)) error
+	WalkWithContext(ctx context.Context, path string, callback func(path string)) error
 }
 
 // Creator create newfile or open current and truncate
@@ -54,7 +54,7 @@ type Getter interface {
 
 // Getter get object from storage
 type GetterWithContext interface {
-	GetterWithContext(ctx context.Context, path string) (io.ReadCloser, error)
+	GetWithContext(ctx context.Context, path string) (io.ReadCloser, error)
 }
 
 // Putter move object to storage
