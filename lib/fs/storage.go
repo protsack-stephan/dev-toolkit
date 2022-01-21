@@ -53,7 +53,7 @@ func (s Storage) List(path string, options ...map[string]interface{}) ([]string,
 }
 
 // ListWithContext reads the path content
-func (s Storage) ListWithContext(ctx context.Context, path string, options ...map[string]interface{}) ([]string, error) {
+func (s Storage) ListWithContext(_ context.Context, path string, options ...map[string]interface{}) ([]string, error) {
 	return s.List(path, options...)
 }
 
@@ -87,7 +87,7 @@ func (s Storage) Walk(path string, callback func(path string)) error {
 }
 
 // WalkWithContext recursively look for files in directory
-func (s Storage) WalkWithContext(ctx context.Context, path string, callback func(path string)) error {
+func (s Storage) WalkWithContext(_ context.Context, path string, callback func(path string)) error {
 	return s.Walk(path, callback)
 }
 
@@ -125,7 +125,7 @@ func (s Storage) Get(path string) (io.ReadCloser, error) {
 }
 
 // GetWithContext get object from storage
-func (s Storage) GetWithContext(ctx context.Context, path string) (io.ReadCloser, error) {
+func (s Storage) GetWithContext(_ context.Context, path string) (io.ReadCloser, error) {
 	return s.Get(path)
 }
 
@@ -158,7 +158,7 @@ func (s Storage) Put(path string, body io.Reader) error {
 }
 
 // PutWithContext object into storage
-func (s Storage) PutWithContext(ctx context.Context, path string, body io.Reader) error {
+func (s Storage) PutWithContext(_ context.Context, path string, body io.Reader) error {
 	return s.Put(path, body)
 }
 
@@ -179,7 +179,7 @@ func (s *Storage) Delete(path string) error {
 }
 
 // DeleteWithContext remove object from storage
-func (s *Storage) DeleteWithContext(ctx context.Context, path string) error {
+func (s *Storage) DeleteWithContext(_ context.Context, path string) error {
 	return s.Delete(path)
 }
 

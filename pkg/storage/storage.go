@@ -28,6 +28,7 @@ type Lister interface {
 	List(path string, options ...map[string]interface{}) ([]string, error)
 }
 
+// ListerWithContext get the contents of the path
 type ListerWithContext interface {
 	ListWithContext(ctx context.Context, path string, options ...map[string]interface{}) ([]string, error)
 }
@@ -52,7 +53,7 @@ type Getter interface {
 	Get(path string) (io.ReadCloser, error)
 }
 
-// Getter get object from storage
+// GetterWithContext get object from storage
 type GetterWithContext interface {
 	GetWithContext(ctx context.Context, path string) (io.ReadCloser, error)
 }
@@ -77,7 +78,7 @@ type Deleter interface {
 	Delete(path string) error
 }
 
-// Deleter delete object from storage
+// DeleterWithContext delete object from storage
 type DeleterWithContext interface {
 	DeleteWithContext(ctx context.Context, path string) error
 }
