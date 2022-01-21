@@ -71,6 +71,39 @@ func (s *Storage) List(path string, options ...map[string]interface{}) ([]string
 	return result, err
 }
 
+// ListWithContext reads the path content or prefixes, supports context.
+func (s *Storage) ListWithContext(ctx aws.Context, path string, options ...map[string]interface{}) ([]string, error) {
+	var result []string
+
+	input := s3.ListObjectsInput{
+		Bucket: aws.String(s.bucket),
+		Prefix: aws.String(path),
+	}
+
+	if len(options) > 0 {
+		if options[0]["delimiter"] != nil {
+			input.SetDelimiter(options[0]["delimiter"].(string))
+		}
+	}
+
+	err := s.s3.ListObjectsPagesWithContext(
+		ctx,
+		&input,
+		// handle bulks of 1000 keys
+		func(res *s3.ListObjectsOutput, _ bool) bool {
+			if input.Delimiter != nil {
+				result = append(result, prefixes(res)...)
+			} else {
+				result = append(result, contents(res)...)
+			}
+
+			return true
+		},
+	)
+
+	return result, err
+}
+
 func contents(res *s3.ListObjectsOutput) []string {
 	result := make([]string, 0)
 
@@ -120,6 +153,24 @@ func (s *Storage) Walk(path string, callback func(path string)) error {
 	return nil
 }
 
+// WalkWithContext recursively look for files in directory, supports context
+func (s *Storage) WalkWithContext(ctx aws.Context, path string, callback func(path string)) error {
+	res, err := s.s3.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
+		Bucket: aws.String(s.bucket),
+		Prefix: aws.String(path),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, object := range res.Contents {
+		callback(*object.Key)
+	}
+
+	return nil
+}
+
 // Create for create interface
 func (s *Storage) Create(_ string) (io.ReadWriteCloser, error) {
 	return nil, errors.New("method unimplemented")
@@ -135,9 +186,30 @@ func (s *Storage) Get(path string) (io.ReadCloser, error) {
 	return out.Body, err
 }
 
+// GetWithContext gets file from s3 bucket, supports context
+func (s *Storage) GetWithContext(ctx aws.Context, path string) (io.ReadCloser, error) {
+	out, err := s.s3.GetObjectWithContext(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(path),
+	})
+
+	return out.Body, err
+}
+
 // Put file into s3 bucket
 func (s *Storage) Put(path string, body io.Reader) error {
 	_, err := s.uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(path),
+		Body:   body,
+	})
+
+	return err
+}
+
+// PutWithContext puts file into s3 bucket, supports context
+func (s *Storage) PutWithContext(ctx aws.Context, path string, body io.Reader) error {
+	_, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
 		Body:   body,
@@ -159,6 +231,16 @@ func (s *Storage) Link(path string, expire time.Duration) (string, error) {
 // Delete remove object from s3
 func (s *Storage) Delete(path string) error {
 	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
+		Key:    aws.String(path),
+		Bucket: aws.String(s.bucket),
+	})
+
+	return err
+}
+
+// DeleteWithContext removes object from s3, supports context
+func (s *Storage) DeleteWithContext(ctx aws.Context, path string) error {
+	_, err := s.s3.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Key:    aws.String(path),
 		Bucket: aws.String(s.bucket),
 	})
