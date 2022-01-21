@@ -79,7 +79,7 @@ type Deleter interface {
 
 // Deleter delete object from storage
 type DeleterWithContext interface {
-	DeleterWithContext(ctx context.Context, path string) error
+	DeleteWithContext(ctx context.Context, path string) error
 }
 
 // Stater get information about the file
