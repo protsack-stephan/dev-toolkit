@@ -71,7 +71,7 @@ func (s *Storage) List(path string, options ...map[string]interface{}) ([]string
 	return result, err
 }
 
-// ListWithContext reads the path content or prefixes, supports context.
+// ListWithContext reads the path content or prefixes
 func (s *Storage) ListWithContext(ctx aws.Context, path string, options ...map[string]interface{}) ([]string, error) {
 	var result []string
 
@@ -153,7 +153,7 @@ func (s *Storage) Walk(path string, callback func(path string)) error {
 	return nil
 }
 
-// WalkWithContext recursively look for files in directory, supports context
+// WalkWithContext recursively look for files in directory
 func (s *Storage) WalkWithContext(ctx aws.Context, path string, callback func(path string)) error {
 	res, err := s.s3.ListObjectsWithContext(ctx, &s3.ListObjectsInput{
 		Bucket: aws.String(s.bucket),
@@ -186,7 +186,7 @@ func (s *Storage) Get(path string) (io.ReadCloser, error) {
 	return out.Body, err
 }
 
-// GetWithContext gets file from s3 bucket, supports context
+// GetWithContext gets file from s3 bucket
 func (s *Storage) GetWithContext(ctx aws.Context, path string) (io.ReadCloser, error) {
 	out, err := s.s3.GetObjectWithContext(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
@@ -207,7 +207,7 @@ func (s *Storage) Put(path string, body io.Reader) error {
 	return err
 }
 
-// PutWithContext puts file into s3 bucket, supports context
+// PutWithContext puts file into s3 bucket
 func (s *Storage) PutWithContext(ctx aws.Context, path string, body io.Reader) error {
 	_, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.bucket),
@@ -238,7 +238,7 @@ func (s *Storage) Delete(path string) error {
 	return err
 }
 
-// DeleteWithContext removes object from s3, supports context
+// DeleteWithContext removes object from s3
 func (s *Storage) DeleteWithContext(ctx aws.Context, path string) error {
 	_, err := s.s3.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Key:    aws.String(path),

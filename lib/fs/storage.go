@@ -179,7 +179,7 @@ func (s *Storage) Delete(path string) error {
 }
 
 // DeleteWithContext remove object from storage
-func (s *Storage) DeleteWithContext(path string) error {
+func (s *Storage) DeleteWithContext(ctx context.Context, path string) error {
 	return s.Delete(path)
 }
 
