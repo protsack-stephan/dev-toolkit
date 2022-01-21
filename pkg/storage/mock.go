@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"time"
@@ -20,8 +21,18 @@ func (Mock) List(path string, options ...map[string]interface{}) ([]string, erro
 	return []string{}, nil
 }
 
+// ListWithContext get the contents of the path
+func (Mock) ListWithContext(ctx context.Context, path string, options ...map[string]interface{}) ([]string, error) {
+	return []string{}, nil
+}
+
 // Walk recursively look for files in directory
 func (Mock) Walk(path string, callback func(path string)) error {
+	return nil
+}
+
+// WalkWithContext recursively look for files in directory
+func (Mock) WalkWithContext(ctx context.Context, path string, callback func(path string)) error {
 	return nil
 }
 
@@ -35,8 +46,18 @@ func (Mock) Get(path string) (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewReader([]byte{})), nil
 }
 
+// GetWithContext get object from storage
+func (Mock) GetWithContext(ctx context.Context, path string) (io.ReadCloser, error) {
+	return ioutil.NopCloser(bytes.NewReader([]byte{})), nil
+}
+
 // Put object into storage
 func (Mock) Put(path string, body io.Reader) error {
+	return nil
+}
+
+// PutWithContext object into storage
+func (Mock) PutWithContext(ctx context.Context, path string, body io.Reader) error {
 	return nil
 }
 
@@ -47,6 +68,11 @@ func (Mock) Link(path string, expire time.Duration) (string, error) {
 
 // Delete remove object from storage
 func (Mock) Delete(path string) error {
+	return nil
+}
+
+// DeleteWithContext remove object from storage
+func (Mock) DeleteWithContext(ctx context.Context, path string) error {
 	return nil
 }
 

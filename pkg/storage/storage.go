@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io"
 	"time"
 )
@@ -8,12 +9,17 @@ import (
 // Storage list of storage interfaces
 type Storage interface {
 	Lister
+	ListerWithContext
 	Walker
+	WalkerWithContext
 	Creator
 	Getter
+	GetterWithContext
 	Putter
+	PutterWithContext
 	Linker
 	Deleter
+	DeleterWithContext
 	Stater
 }
 
@@ -22,9 +28,18 @@ type Lister interface {
 	List(path string, options ...map[string]interface{}) ([]string, error)
 }
 
+type ListerWithContext interface {
+	ListWithContext(ctx context.Context, path string, options ...map[string]interface{}) ([]string, error)
+}
+
 // Walker recursively look for files in directory
 type Walker interface {
 	Walk(path string, callback func(path string)) error
+}
+
+// WalkerWithContext recursively look for files in directory
+type WalkerWithContext interface {
+	WalkWithContext(path string, callback func(path string)) error
 }
 
 // Creator create newfile or open current and truncate
@@ -37,9 +52,19 @@ type Getter interface {
 	Get(path string) (io.ReadCloser, error)
 }
 
+// Getter get object from storage
+type GetterWithContext interface {
+	GetterWithContext(ctx context.Context, path string) (io.ReadCloser, error)
+}
+
 // Putter move object to storage
 type Putter interface {
 	Put(path string, body io.Reader) error
+}
+
+// PutterWithContext moves object to storage
+type PutterWithContext interface {
+	PutWithContext(ctx context.Context, path string, body io.Reader) error
 }
 
 // Linker get dowload link with expiration
@@ -50,6 +75,11 @@ type Linker interface {
 // Deleter delete object from storage
 type Deleter interface {
 	Delete(path string) error
+}
+
+// Deleter delete object from storage
+type DeleterWithContext interface {
+	DeleterWithContext(ctx context.Context, path string) error
 }
 
 // Stater get information about the file
