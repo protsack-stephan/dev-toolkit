@@ -2,6 +2,7 @@ package fs
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -27,6 +28,7 @@ func TestStorage(t *testing.T) {
 	store := NewStorage(storageTestVol)
 	assert := assert.New(t)
 	assert.Nil(testStorage(store))
+	ctx := context.Background()
 
 	t.Run("List path's content", func(t *testing.T) {
 		content, err := store.List("/")
@@ -34,8 +36,20 @@ func TestStorage(t *testing.T) {
 		assert.Equal(content, []string{storageTestWalkPath})
 	})
 
+	t.Run("list path's content with context", func(t *testing.T) {
+		content, err := store.ListWithContext(ctx, "/")
+		assert.NoError(err)
+		assert.Equal(content, []string{storageTestWalkPath})
+	})
+
 	t.Run("walk path", func(t *testing.T) {
 		assert.NoError(store.Walk("/", func(path string) {
+			assert.Equal(storageTestWalkPath, path)
+		}))
+	})
+
+	t.Run("walk path with context", func(t *testing.T) {
+		assert.NoError(store.WalkWithContext(ctx, "/", func(path string) {
 			assert.Equal(storageTestWalkPath, path)
 		}))
 	})
@@ -49,6 +63,10 @@ func TestStorage(t *testing.T) {
 
 	t.Run("put file", func(t *testing.T) {
 		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
+	})
+
+	t.Run("put file with context", func(t *testing.T) {
+		assert.NoError(store.PutWithContext(ctx, storageTestPath, bytes.NewReader(storageTestData)))
 	})
 
 	t.Run("stat file", func(t *testing.T) {
@@ -67,6 +85,16 @@ func TestStorage(t *testing.T) {
 		assert.Equal(storageTestData, data)
 	})
 
+	t.Run("get file with context", func(t *testing.T) {
+		body, err := store.GetWithContext(ctx, storageTestPath)
+		assert.NoError(err)
+		defer body.Close()
+
+		data, err := ioutil.ReadAll(body)
+		assert.NoError(err)
+		assert.Equal(storageTestData, data)
+	})
+
 	t.Run("link file", func(t *testing.T) {
 		loc, err := store.Link(storageTestPath, storageTestExpire)
 		assert.NoError(err)
@@ -75,5 +103,10 @@ func TestStorage(t *testing.T) {
 
 	t.Run("delete file", func(t *testing.T) {
 		assert.NoError(store.Delete(storageTestPath))
+	})
+
+	t.Run("delete file with context", func(t *testing.T) {
+		assert.NoError(store.PutWithContext(ctx, storageTestPath, bytes.NewReader(storageTestData)))
+		assert.NoError(store.DeleteWithContext(ctx, storageTestPath))
 	})
 }
