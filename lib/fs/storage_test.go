@@ -106,6 +106,7 @@ func TestStorage(t *testing.T) {
 	})
 
 	t.Run("delete file with context", func(t *testing.T) {
+		assert.NoError(store.PutWithContext(ctx, storageTestPath, bytes.NewReader(storageTestData)))
 		assert.NoError(store.DeleteWithContext(ctx, storageTestPath))
 	})
 }
