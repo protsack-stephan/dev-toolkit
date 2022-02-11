@@ -6,9 +6,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Logger interface {
-	SetFormatter(formatter logrus.Formatter)
+type WithFielder interface {
 	WithFields(fields logrus.Fields) *logrus.Entry
+}
+
+type Formatter interface {
+	SetFormatter(formatter logrus.Formatter)
+}
+
+type Printer interface {
 	Printf(format string, args ...interface{})
 	Println(args ...interface{})
 	Debug(args ...interface{})
@@ -16,7 +22,12 @@ type Logger interface {
 	Warn(args ...interface{})
 	Panic(args ...interface{})
 	Error(args ...interface{})
-	Exit(code int)
+}
+
+type Logger interface {
+	WithFielder
+	Formatter
+	Printer
 }
 
 var logger Logger
@@ -33,7 +44,7 @@ func SetLogger(l Logger) {
 }
 
 // WithFields call logrus WithFields
-func WithFields(fields map[string]interface{}) *logrus.Entry {
+func WithFields(fields map[string]interface{}) Printer {
 	return logger.WithFields(fields)
 }
 
@@ -70,9 +81,4 @@ func Panic(args ...interface{}) {
 // Error call logrus Error
 func Error(args ...interface{}) {
 	logger.Error(args...)
-}
-
-// Exit call logrus Exit
-func Exit(code int) {
-	logger.Exit(code)
 }
