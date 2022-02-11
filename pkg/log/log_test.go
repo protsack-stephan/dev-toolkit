@@ -1,9 +1,10 @@
 package log
 
 import (
+	"testing"
+
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 // Mock object for logger
@@ -58,11 +59,6 @@ func (l *loggerMock) Error(args ...interface{}) {
 	l.Called(args)
 }
 
-// Mock logger Exit method behaviour
-func (l *loggerMock) Exit(code int) {
-	l.Called(code)
-}
-
 const logTestPrintfFormat = "Format"
 const logTestPrintfLog = "run Printf"
 const logTestPrintlnLog = "run Println"
@@ -71,7 +67,6 @@ const logTestInfoLog = "run Info"
 const logTestWarnLog = "run Warn"
 const logTestPanicLog = "run Panic"
 const logTestErrorLog = "run Error"
-const logTestExitCode = 1
 
 func TestLogger(t *testing.T) {
 	loggerObj := new(loggerMock)
@@ -84,7 +79,6 @@ func TestLogger(t *testing.T) {
 	loggerObj.On("Warn", []interface{}{logTestWarnLog})
 	loggerObj.On("Panic", []interface{}{logTestPanicLog})
 	loggerObj.On("Error", []interface{}{logTestErrorLog})
-	loggerObj.On("Exit", logTestExitCode)
 
 	SetLogger(loggerObj)
 
@@ -96,5 +90,4 @@ func TestLogger(t *testing.T) {
 	Warn(logTestWarnLog)
 	Panic(logTestPanicLog)
 	Error(logTestErrorLog)
-	Exit(logTestExitCode)
 }
