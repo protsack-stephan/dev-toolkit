@@ -6,14 +6,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// WithFielder is an interface that wraps WithFields methods for unit testing
 type WithFielder interface {
 	WithFields(fields logrus.Fields) *logrus.Entry
 }
 
+// Formatter is an interface that wraps SetFormatter methods for unit testing
 type Formatter interface {
 	SetFormatter(formatter logrus.Formatter)
 }
 
+// Printer is an interface that wraps logrus print methods for unit testing
 type Printer interface {
 	Printf(format string, args ...interface{})
 	Println(args ...interface{})
@@ -24,6 +27,7 @@ type Printer interface {
 	Error(args ...interface{})
 }
 
+// Logger is an interface that wraps all required logger methods for unit testing
 type Logger interface {
 	WithFielder
 	Formatter
