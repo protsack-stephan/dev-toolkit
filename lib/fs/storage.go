@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -93,12 +94,19 @@ func (s Storage) WalkWithContext(_ context.Context, path string, callback func(p
 
 // Copy copies a file.
 func (s Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
+	mode := 0644
+
+	if len(options) > 0 {
+		if options[0]["mode"] != nil {
+			mode = options[0]["mode"].(int)
+		}
+	}
 	input, err := ioutil.ReadFile(src)
 	if err != nil {
 		return err
 	}
 
-	if err := ioutil.WriteFile(dst, input, 0644); err != nil {
+	if err := ioutil.WriteFile(dst, input, fs.FileMode(mode)); err != nil {
 		return err
 	}
 	return nil

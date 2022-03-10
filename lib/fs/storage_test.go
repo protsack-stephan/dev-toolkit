@@ -112,9 +112,12 @@ func TestStorage(t *testing.T) {
 		assert.NoError(store.DeleteWithContext(ctx, storageTestPath))
 	})
 
-	t.Run("copy file", func(t *testing.T) {
+	t.Run("copy file with permission argument", func(t *testing.T) {
 		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
-		assert.NoError(store.Copy(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
+		options := []map[string]interface{}{
+			{"mode": 0777},
+		}
+		assert.NoError(store.Copy(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath), options...))
 		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
