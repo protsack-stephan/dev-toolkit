@@ -36,6 +36,16 @@ func (Mock) WalkWithContext(ctx context.Context, path string, callback func(path
 	return nil
 }
 
+// Copy copies an object from the a path in a bucket to another path in the same or different bucket.
+func (Mock) Copy(src string, dst string, options ...map[string]interface{}) error {
+	return nil
+}
+
+// CopyWithContext copies an object from the a path in a bucket to another path in the same or different bucket.
+func (Mock) CopyWithContext(ctx context.Context, src string, dst string, options ...map[string]interface{}) error {
+	return nil
+}
+
 // Create for create object in storage
 func (Mock) Create(path string) (io.ReadWriteCloser, error) {
 	return nil, nil

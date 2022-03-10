@@ -3,6 +3,7 @@ package fs
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,6 +16,7 @@ import (
 
 const storageTestVol = "./testdata"
 const storageTestPath = "test.txt"
+const copyDestPath = "dest.txt"
 const storageTestWalkPath = "testwalk.txt"
 
 var storageTestExpire = time.Second * 1
@@ -109,4 +111,37 @@ func TestStorage(t *testing.T) {
 		assert.NoError(store.PutWithContext(ctx, storageTestPath, bytes.NewReader(storageTestData)))
 		assert.NoError(store.DeleteWithContext(ctx, storageTestPath))
 	})
+
+	t.Run("copy file", func(t *testing.T) {
+		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
+		assert.NoError(store.Copy(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
+		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
+		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
+		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
+	})
+
+	t.Run("copy file with context", func(t *testing.T) {
+		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
+		assert.NoError(store.CopyWithContext(ctx, fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
+		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
+		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
+		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
+	})
+}
+
+func (store *Storage) compareFileContent(filePath string, content []byte) error {
+	body, err := store.Get(copyDestPath)
+	if err != nil {
+		return err
+	}
+	defer body.Close()
+
+	data, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err
+	}
+	if res := bytes.Compare(data, content); res != 0 {
+		return errors.New("Contents not equal")
+	}
+	return nil
 }

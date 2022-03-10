@@ -91,6 +91,26 @@ func (s Storage) WalkWithContext(_ context.Context, path string, callback func(p
 	return s.Walk(path, callback)
 }
 
+// Copy copies a file.
+// 'src' and 'dst' are absolute paths of the file.
+func (s Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
+	input, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	if err := ioutil.WriteFile(dst, input, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+// CopyWithContext copies a file.
+// 'src' and 'dst' are absolute paths of the file.
+func (s Storage) CopyWithContext(_ context.Context, src string, dst string, options ...map[string]interface{}) error {
+	return s.Copy(src, dst, options...)
+}
+
 // Create create new file or open existing one and truncate it
 func (s Storage) Create(path string) (io.ReadWriteCloser, error) {
 	loc, err := s.fullPath(path)

@@ -5,6 +5,7 @@ package s3
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	pathTool "path"
 	"strings"
@@ -166,6 +167,53 @@ func (s *Storage) WalkWithContext(ctx aws.Context, path string, callback func(pa
 
 	for _, object := range res.Contents {
 		callback(*object.Key)
+	}
+
+	return nil
+}
+
+// Copy copies an object from the a path in a bucket to another path in the same or different bucket.
+// 'src' and 'dst' are absolute paths of the file.
+func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
+	dstBucket := s.bucket
+
+	if len(options) > 0 {
+		if options[0]["dstBucket"] != nil {
+			dstBucket = options[0]["dstBucket"].(string)
+		}
+	}
+	_, err := s.s3.CopyObject(&s3.CopyObjectInput{
+		Bucket:     aws.String(dstBucket),
+		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
+		Key:        aws.String(dst),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CopyWithContext copies an object from the a path in a bucket to another path in the same or different bucket.
+// 'src' and 'dst' are absolute paths of the file.
+func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, options ...map[string]interface{}) error {
+	dstBucket := s.bucket
+
+	if len(options) > 0 {
+		if options[0]["dstBucket"] != nil {
+			dstBucket = options[0]["dstBucket"].(string)
+		}
+	}
+
+	_, err := s.s3.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
+		Bucket:     aws.String(dstBucket),
+		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
+		Key:        aws.String(dst),
+	})
+
+	if err != nil {
+		return err
 	}
 
 	return nil
