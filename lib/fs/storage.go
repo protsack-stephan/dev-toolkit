@@ -92,7 +92,6 @@ func (s Storage) WalkWithContext(_ context.Context, path string, callback func(p
 }
 
 // Copy copies a file.
-// 'src' and 'dst' are absolute paths of the file.
 func (s Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
 	input, err := ioutil.ReadFile(src)
 	if err != nil {
@@ -106,7 +105,6 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 }
 
 // CopyWithContext copies a file.
-// 'src' and 'dst' are absolute paths of the file.
 func (s Storage) CopyWithContext(_ context.Context, src string, dst string, options ...map[string]interface{}) error {
 	return s.Copy(src, dst, options...)
 }
