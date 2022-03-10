@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"time"
 )
@@ -97,4 +98,9 @@ type FileInfoMock struct{}
 // Size get file info size
 func (FileInfoMock) Size() int64 {
 	return 0
+}
+
+// Size get file info size
+func (FileInfoMock) Mode() fs.FileMode {
+	return fs.FileMode(0644)
 }

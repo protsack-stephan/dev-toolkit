@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -115,10 +116,11 @@ func TestStorage(t *testing.T) {
 	t.Run("copy file with permission argument", func(t *testing.T) {
 		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
 		options := []map[string]interface{}{
-			{"mode": 0777},
+			{"mode": 0711},
 		}
 		assert.NoError(store.Copy(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath), options...))
 		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
+		assert.NoError(store.compareFileMode(copyDestPath, options[0]["mode"].(int)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 	})
@@ -127,6 +129,7 @@ func TestStorage(t *testing.T) {
 		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
 		assert.NoError(store.CopyWithContext(ctx, fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
+		assert.NoError(store.compareFileMode(copyDestPath, 0644))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 	})
@@ -146,5 +149,18 @@ func (store *Storage) compareFileContent(filePath string, content []byte) error 
 	if res := bytes.Compare(data, content); res != 0 {
 		return errors.New("Contents not equal")
 	}
+	return nil
+}
+
+func (store *Storage) compareFileMode(filePath string, mode int) error {
+	info, err := store.Stat(filePath)
+
+	if err != nil {
+		return err
+	}
+	if info.Mode() != fs.FileMode(mode) {
+		return errors.New("Wrong file permission set.")
+	}
+
 	return nil
 }

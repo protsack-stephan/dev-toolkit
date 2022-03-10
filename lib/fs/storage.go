@@ -101,6 +101,7 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 			mode = options[0]["mode"].(int)
 		}
 	}
+
 	input, err := ioutil.ReadFile(src)
 	if err != nil {
 		return err
