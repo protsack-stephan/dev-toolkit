@@ -100,7 +100,7 @@ func (FileInfoMock) Size() int64 {
 	return 0
 }
 
-// Size get file info size
+// Mode get unix mode.
 func (FileInfoMock) Mode() fs.FileMode {
 	return fs.FileMode(0644)
 }

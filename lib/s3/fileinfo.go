@@ -13,7 +13,7 @@ func (fi FileInfo) Size() int64 {
 	return fi.size
 }
 
-// Size get file size
+// Mode get unix mode.
 func (fi FileInfo) Mode() fs.FileMode {
 	return fi.mode
 }
