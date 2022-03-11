@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	pathTool "path"
 	"strings"
 	"time"
@@ -309,7 +308,5 @@ func (s *Storage) Stat(path string) (storage.FileInfo, error) {
 		return nil, err
 	}
 
-	// File permission is supposed to be under out.Metadata map. However,the Metada is nil.
-	// Setting the default unix file permission 0666 as in the docs https://docs.aws.amazon.com/filegateway/latest/files3/edit-metadata-defaults.html
-	return &FileInfo{*out.ContentLength, fs.FileMode(0666)}, nil
+	return &FileInfo{*out.ContentLength}, nil
 }

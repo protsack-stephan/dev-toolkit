@@ -120,7 +120,7 @@ func TestStorage(t *testing.T) {
 		}
 		assert.NoError(store.Copy(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath), options...))
 		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
-		assert.NoError(store.compareFileMode(copyDestPath, options[0]["mode"].(int)))
+		assert.NoError(compareFileMode(copyDestPath, options[0]["mode"].(int)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 	})
@@ -129,7 +129,7 @@ func TestStorage(t *testing.T) {
 		assert.NoError(store.Put(storageTestPath, bytes.NewReader(storageTestData)))
 		assert.NoError(store.CopyWithContext(ctx, fmt.Sprintf("%s/%s", storageTestVol, storageTestPath), fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 		assert.NoError(store.compareFileContent(copyDestPath, storageTestData))
-		assert.NoError(store.compareFileMode(copyDestPath, 0644))
+		assert.NoError(compareFileMode(copyDestPath, 0644))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, storageTestPath)))
 		assert.NoError(os.Remove(fmt.Sprintf("%s/%s", storageTestVol, copyDestPath)))
 	})
@@ -152,8 +152,8 @@ func (store *Storage) compareFileContent(filePath string, content []byte) error 
 	return nil
 }
 
-func (store *Storage) compareFileMode(filePath string, mode int) error {
-	info, err := store.Stat(filePath)
+func compareFileMode(filePath string, mode int) error {
+	info, err := os.Stat(fmt.Sprintf("%s/%s", storageTestVol, filePath))
 
 	if err != nil {
 		return err
