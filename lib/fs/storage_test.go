@@ -137,6 +137,7 @@ func TestStorage(t *testing.T) {
 
 func (store *Storage) compareFileContent(filePath string, content []byte) error {
 	body, err := store.Get(copyDestPath)
+
 	if err != nil {
 		return err
 	}
@@ -146,9 +147,11 @@ func (store *Storage) compareFileContent(filePath string, content []byte) error 
 	if err != nil {
 		return err
 	}
+
 	if res := bytes.Compare(data, content); res != 0 {
 		return errors.New("Contents not equal")
 	}
+
 	return nil
 }
 
@@ -158,6 +161,7 @@ func compareFileMode(filePath string, mode int) error {
 	if err != nil {
 		return err
 	}
+
 	if info.Mode() != fs.FileMode(mode) {
 		return errors.New("Wrong file permission set.")
 	}
