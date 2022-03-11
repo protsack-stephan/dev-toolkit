@@ -177,9 +177,11 @@ func (s *Storage) WalkWithContext(ctx aws.Context, path string, callback func(pa
 func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
 	dstBucket := s.bucket
 
-	if len(options) > 0 {
-		if options[0]["dstBucket"] != nil {
-			dstBucket = options[0]["dstBucket"].(string)
+	for _, opt := range options {
+		if v, ok := opt["dstBucket"]; ok {
+			if bkt, ok := v.(string); ok {
+				dstBucket = bkt
+			}
 		}
 	}
 
@@ -189,11 +191,7 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 		Key:        aws.String(dst),
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CopyWithContext copies an object from the a path in a bucket to another path in the same or different bucket.
@@ -201,9 +199,11 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, options ...map[string]interface{}) error {
 	dstBucket := s.bucket
 
-	if len(options) > 0 {
-		if options[0]["dstBucket"] != nil {
-			dstBucket = options[0]["dstBucket"].(string)
+	for _, opt := range options {
+		if v, ok := opt["dstBucket"]; ok {
+			if bkt, ok := v.(string); ok {
+				dstBucket = bkt
+			}
 		}
 	}
 
@@ -213,11 +213,7 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 		Key:        aws.String(dst),
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Create for create interface

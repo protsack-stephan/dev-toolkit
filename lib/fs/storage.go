@@ -96,9 +96,11 @@ func (s Storage) WalkWithContext(_ context.Context, path string, callback func(p
 func (s Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
 	mode := 0644
 
-	if len(options) > 0 {
-		if options[0]["mode"] != nil {
-			mode = options[0]["mode"].(int)
+	for _, opt := range options {
+		if v, ok := opt["mode"]; ok {
+			if m, ok := v.(int); ok {
+				mode = m
+			}
 		}
 	}
 
@@ -110,6 +112,7 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 	if err := ioutil.WriteFile(dst, input, fs.FileMode(mode)); err != nil {
 		return err
 	}
+
 	return nil
 }
 
