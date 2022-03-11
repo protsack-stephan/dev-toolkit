@@ -109,11 +109,7 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 		return err
 	}
 
-	if err := ioutil.WriteFile(dst, input, fs.FileMode(mode)); err != nil {
-		return err
-	}
-
-	return nil
+	return ioutil.WriteFile(dst, input, fs.FileMode(mode))
 }
 
 // CopyWithContext copies a file.
