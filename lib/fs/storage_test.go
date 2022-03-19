@@ -33,9 +33,10 @@ func compareFileContent(store *Storage, filePath string, content []byte) error {
 	if err != nil {
 		return err
 	}
-	defer body.Close()
 
+	defer body.Close()
 	data, err := ioutil.ReadAll(body)
+
 	if err != nil {
 		return err
 	}
