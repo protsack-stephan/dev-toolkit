@@ -12,6 +12,8 @@ type Storage interface {
 	ListerWithContext
 	Walker
 	WalkerWithContext
+	Copier
+	CopierWithContext
 	Creator
 	Getter
 	GetterWithContext
@@ -41,6 +43,18 @@ type Walker interface {
 // WalkerWithContext recursively look for files in directory
 type WalkerWithContext interface {
 	WalkWithContext(ctx context.Context, path string, callback func(path string)) error
+}
+
+// Copier copies an object from the a path in a bucket to another path in the same or different bucket.
+// 'src' and 'dst' are absolute paths of the file.
+type Copier interface {
+	Copy(src string, dst string, options ...map[string]interface{}) error
+}
+
+// CopierWithContext copies an object from the a path in a bucket to another path in the same or different bucket.
+// 'src' and 'dst' are absolute paths of the file.
+type CopierWithContext interface {
+	CopyWithContext(ctx context.Context, src string, dst string, options ...map[string]interface{}) error
 }
 
 // Creator create newfile or open current and truncate

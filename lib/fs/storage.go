@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -39,14 +40,17 @@ type Storage struct {
 // List reads the path content
 func (s Storage) List(path string, options ...map[string]interface{}) ([]string, error) {
 	dir, err := s.fullPath(path)
+
 	if err != nil {
 		return []string{}, err
 	}
 
 	d, err := os.Open(dir)
+
 	if err != nil {
 		return []string{}, err
 	}
+
 	defer d.Close()
 
 	return d.Readdirnames(-1)
@@ -89,6 +93,32 @@ func (s Storage) Walk(path string, callback func(path string)) error {
 // WalkWithContext recursively look for files in directory
 func (s Storage) WalkWithContext(_ context.Context, path string, callback func(path string)) error {
 	return s.Walk(path, callback)
+}
+
+// Copy copies a file.
+func (s Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
+	mode := 0644
+
+	for _, opt := range options {
+		if v, ok := opt["mode"]; ok {
+			if m, ok := v.(int); ok {
+				mode = m
+			}
+		}
+	}
+
+	input, err := ioutil.ReadFile(src)
+
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(dst, input, fs.FileMode(mode))
+}
+
+// CopyWithContext copies a file.
+func (s Storage) CopyWithContext(_ context.Context, src string, dst string, options ...map[string]interface{}) error {
+	return s.Copy(src, dst, options...)
 }
 
 // Create create new file or open existing one and truncate it
