@@ -40,14 +40,17 @@ type Storage struct {
 // List reads the path content
 func (s Storage) List(path string, options ...map[string]interface{}) ([]string, error) {
 	dir, err := s.fullPath(path)
+
 	if err != nil {
 		return []string{}, err
 	}
 
 	d, err := os.Open(dir)
+
 	if err != nil {
 		return []string{}, err
 	}
+
 	defer d.Close()
 
 	return d.Readdirnames(-1)
@@ -105,6 +108,7 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 	}
 
 	input, err := ioutil.ReadFile(src)
+
 	if err != nil {
 		return err
 	}

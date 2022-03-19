@@ -21,6 +21,37 @@ import (
 const maxUploadParts = 20000
 const partSize = 1024 * 1024 * 5 * 2
 
+func contents(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
+
+	for _, object := range res.Contents {
+		// Check whether the object is nested in a path
+		p := strings.Split(*object.Key, "/")
+
+		if len(p) == 1 {
+			// It's a file
+			result = append(result, *object.Key)
+		} else if result[len(p)-1] != p[0] {
+			// It's a folder
+			// And it is not added yet
+			// res.Contents is sorted so if p[0] is not unique it would appear last in the result
+			result = append(result, p[0])
+		}
+	}
+
+	return result
+}
+
+func prefixes(res *s3.ListObjectsOutput) []string {
+	result := make([]string, 0)
+
+	for _, prefix := range res.CommonPrefixes {
+		result = append(result, pathTool.Base(*prefix.Prefix))
+	}
+
+	return result
+}
+
 // NewStorage create new storage instance
 func NewStorage(ses *session.Session, bucket string) *Storage {
 	return &Storage{
@@ -105,37 +136,6 @@ func (s *Storage) ListWithContext(ctx aws.Context, path string, options ...map[s
 	return result, err
 }
 
-func contents(res *s3.ListObjectsOutput) []string {
-	result := make([]string, 0)
-
-	for _, object := range res.Contents {
-		// Check whether the object is nested in a path
-		p := strings.Split(*object.Key, "/")
-
-		if len(p) == 1 {
-			// It's a file
-			result = append(result, *object.Key)
-		} else if result[len(p)-1] != p[0] {
-			// It's a folder
-			// And it is not added yet
-			// res.Contents is sorted so if p[0] is not unique it would appear last in the result
-			result = append(result, p[0])
-		}
-	}
-
-	return result
-}
-
-func prefixes(res *s3.ListObjectsOutput) []string {
-	result := make([]string, 0)
-
-	for _, prefix := range res.CommonPrefixes {
-		result = append(result, pathTool.Base(*prefix.Prefix))
-	}
-
-	return result
-}
-
 // Walk recursively look for files in directory
 func (s *Storage) Walk(path string, callback func(path string)) error {
 	res, err := s.s3.ListObjects(&s3.ListObjectsInput{
@@ -175,18 +175,18 @@ func (s *Storage) WalkWithContext(ctx aws.Context, path string, callback func(pa
 // Copy copies an object from the a path in a bucket to another path in the same or different bucket.
 // 'src' and 'dst' are absolute paths of the file.
 func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}) error {
-	dstBucket := s.bucket
+	bucket := s.bucket
 
 	for _, opt := range options {
-		if v, ok := opt["dstBucket"]; ok {
+		if v, ok := opt["bucket"]; ok {
 			if bkt, ok := v.(string); ok {
-				dstBucket = bkt
+				bucket = bkt
 			}
 		}
 	}
 
 	_, err := s.s3.CopyObject(&s3.CopyObjectInput{
-		Bucket:     aws.String(dstBucket),
+		Bucket:     aws.String(bucket),
 		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
 		Key:        aws.String(dst),
 	})
