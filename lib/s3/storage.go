@@ -197,18 +197,18 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 // CopyWithContext copies an object from the a path in a bucket to another path in the same or different bucket.
 // 'src' and 'dst' are absolute paths of the file.
 func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, options ...map[string]interface{}) error {
-	dstBucket := s.bucket
+	bucket := s.bucket
 
 	for _, opt := range options {
 		if v, ok := opt["dstBucket"]; ok {
 			if bkt, ok := v.(string); ok {
-				dstBucket = bkt
+				bucket = bkt
 			}
 		}
 	}
 
 	_, err := s.s3.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
-		Bucket:     aws.String(dstBucket),
+		Bucket:     aws.String(bucket),
 		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
 		Key:        aws.String(dst),
 	})
