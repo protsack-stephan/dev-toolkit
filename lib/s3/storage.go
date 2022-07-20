@@ -23,7 +23,6 @@ const maxUploadParts = 20000
 const partSize = 1024 * 1024 * 5 * 2
 
 const maxUploadSizeBytes = 4294967296
-const minUploadSizeBytes = 5242880
 
 func contents(res *s3.ListObjectsOutput) []string {
 	result := make([]string, 0)
