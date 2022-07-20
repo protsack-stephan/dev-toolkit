@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	pathTool "path"
 	"strings"
 	"time"
@@ -20,6 +21,9 @@ import (
 
 const maxUploadParts = 20000
 const partSize = 1024 * 1024 * 5 * 2
+
+const maxUploadSizeBytes = 4294967296
+const minUploadSizeBytes = 5242880
 
 func contents(res *s3.ListObjectsOutput) []string {
 	result := make([]string, 0)
@@ -185,10 +189,75 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 		}
 	}
 
-	_, err := s.s3.CopyObject(&s3.CopyObjectInput{
-		Bucket:     aws.String(bucket),
-		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
-		Key:        aws.String(dst),
+	hr, err := s.s3.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(src),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if *hr.ContentLength <= maxUploadSizeBytes {
+		_, err = s.s3.CopyObject(&s3.CopyObjectInput{
+			Bucket:     aws.String(bucket),
+			CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
+			Key:        aws.String(dst),
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	cmr, err := s.s3.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(dst),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	cmu := &s3.CompletedMultipartUpload{}
+	maxPart := int(math.Ceil(float64(*hr.ContentLength) / float64(maxUploadSizeBytes)))
+
+	for prt := 0; prt < int(maxPart); prt++ {
+		from := prt * maxUploadSizeBytes
+		to := (prt * maxUploadSizeBytes) + maxUploadSizeBytes
+
+		if prt != 0 {
+			from += 1
+		}
+
+		if to > int(*hr.ContentLength) {
+			to = int(*hr.ContentLength) - 1
+		}
+
+		upr, err := s.s3.UploadPartCopy(&s3.UploadPartCopyInput{
+			Bucket:          aws.String(bucket),
+			CopySource:      aws.String(fmt.Sprintf("%s/%s", bucket, src)),
+			CopySourceRange: aws.String(fmt.Sprintf("bytes=%d-%d", from, to)),
+			Key:             aws.String(dst),
+			PartNumber:      aws.Int64(int64(prt) + 1),
+			UploadId:        aws.String(*cmr.UploadId),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		cmu.Parts = append(cmu.Parts, &s3.CompletedPart{
+			ETag:       upr.CopyPartResult.ETag,
+			PartNumber: aws.Int64(int64(prt) + 1),
+		})
+	}
+
+	_, err = s.s3.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
+		Bucket:          aws.String(bucket),
+		Key:             aws.String(dst),
+		UploadId:        aws.String(*cmr.UploadId),
+		MultipartUpload: cmu,
 	})
 
 	return err
@@ -207,10 +276,75 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 		}
 	}
 
-	_, err := s.s3.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
-		Bucket:     aws.String(bucket),
-		CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
-		Key:        aws.String(dst),
+	hr, err := s.s3.HeadObjectWithContext(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(src),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if *hr.ContentLength <= maxUploadSizeBytes {
+		_, err = s.s3.CopyObjectWithContext(ctx, &s3.CopyObjectInput{
+			Bucket:     aws.String(bucket),
+			CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
+			Key:        aws.String(dst),
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	cmr, err := s.s3.CreateMultipartUploadWithContext(ctx, &s3.CreateMultipartUploadInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(dst),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	cmu := &s3.CompletedMultipartUpload{}
+	maxPart := int(math.Ceil(float64(*hr.ContentLength) / float64(maxUploadSizeBytes)))
+
+	for prt := 0; prt < int(maxPart); prt++ {
+		from := prt * maxUploadSizeBytes
+		to := (prt * maxUploadSizeBytes) + maxUploadSizeBytes
+
+		if prt != 0 {
+			from += 1
+		}
+
+		if to > int(*hr.ContentLength) {
+			to = int(*hr.ContentLength) - 1
+		}
+
+		upr, err := s.s3.UploadPartCopyWithContext(ctx, &s3.UploadPartCopyInput{
+			Bucket:          aws.String(bucket),
+			CopySource:      aws.String(fmt.Sprintf("%s/%s", bucket, src)),
+			CopySourceRange: aws.String(fmt.Sprintf("bytes=%d-%d", from, to)),
+			Key:             aws.String(dst),
+			PartNumber:      aws.Int64(int64(prt) + 1),
+			UploadId:        aws.String(*cmr.UploadId),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		cmu.Parts = append(cmu.Parts, &s3.CompletedPart{
+			ETag:       upr.CopyPartResult.ETag,
+			PartNumber: aws.Int64(int64(prt) + 1),
+		})
+	}
+
+	_, err = s.s3.CompleteMultipartUploadWithContext(ctx, &s3.CompleteMultipartUploadInput{
+		Bucket:          aws.String(bucket),
+		Key:             aws.String(dst),
+		UploadId:        aws.String(*cmr.UploadId),
+		MultipartUpload: cmu,
 	})
 
 	return err
