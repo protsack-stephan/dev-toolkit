@@ -204,9 +204,7 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 			Key:        aws.String(dst),
 		})
 
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	cmr, err := s.s3.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
@@ -221,7 +219,7 @@ func (s *Storage) Copy(src string, dst string, options ...map[string]interface{}
 	cmu := &s3.CompletedMultipartUpload{}
 	maxPart := int(math.Ceil(float64(*hr.ContentLength) / float64(maxUploadSizeBytes)))
 
-	for prt := 0; prt < int(maxPart); prt++ {
+	for prt := 0; prt < maxPart; prt++ {
 		from := prt * maxUploadSizeBytes
 		to := (prt * maxUploadSizeBytes) + maxUploadSizeBytes
 
@@ -291,9 +289,7 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 			Key:        aws.String(dst),
 		})
 
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	cmr, err := s.s3.CreateMultipartUploadWithContext(ctx, &s3.CreateMultipartUploadInput{
@@ -308,7 +304,7 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 	cmu := &s3.CompletedMultipartUpload{}
 	maxPart := int(math.Ceil(float64(*hr.ContentLength) / float64(maxUploadSizeBytes)))
 
-	for prt := 0; prt < int(maxPart); prt++ {
+	for prt := 0; prt < maxPart; prt++ {
 		from := prt * maxUploadSizeBytes
 		to := (prt * maxUploadSizeBytes) + maxUploadSizeBytes
 
