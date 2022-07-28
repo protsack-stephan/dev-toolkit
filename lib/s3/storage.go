@@ -304,5 +304,16 @@ func (s *Storage) Stat(path string) (storage.FileInfo, error) {
 		return nil, err
 	}
 
-	return &FileInfo{*out.ContentLength}, nil
+	return &FileInfo{
+		size:               *out.ContentLength,
+		acceptRanges:       *out.AcceptRanges,
+		cacheControl:       *out.CacheControl,
+		contentDisposition: *out.ContentDisposition,
+		contentEncoding:    *out.ContentEncoding,
+		contentLanguage:    *out.ContentLanguage,
+		contentType:        *out.ContentType,
+		eTag:               *out.ETag,
+		expires:            *out.Expires,
+		lastModified:       *out.LastModified,
+	}, nil
 }
