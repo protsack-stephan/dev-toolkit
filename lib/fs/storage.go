@@ -213,7 +213,7 @@ func (s *Storage) DeleteWithContext(_ context.Context, path string) error {
 	return s.Delete(path)
 }
 
-// Stat ge file information
+// Stat get file information
 func (s Storage) Stat(path string) (storage.FileInfo, error) {
 	loc, err := s.fullPath(path)
 
@@ -227,7 +227,12 @@ func (s Storage) Stat(path string) (storage.FileInfo, error) {
 		return nil, err
 	}
 
-	return info, err
+	inf := &FileInfo{
+		size:         info.Size(),
+		lastModified: info.ModTime(),
+	}
+
+	return inf, err
 }
 
 func (s Storage) fullPath(path string) (string, error) {

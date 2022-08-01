@@ -98,3 +98,48 @@ type FileInfoMock struct{}
 func (FileInfoMock) Size() int64 {
 	return 0
 }
+
+// Size get file info accept-ranges
+func (FileInfoMock) AcceptRanges() string {
+	return "accept-ranges"
+}
+
+// Size get file info Cache-Control
+func (FileInfoMock) CacheControl() string {
+	return "Cache-Control"
+}
+
+// Size get file info Content-Disposition
+func (FileInfoMock) ContentDisposition() string {
+	return "Content-Disposition"
+}
+
+// Size get file info Content-Encoding
+func (FileInfoMock) ContentEncoding() string {
+	return "Content-Encoding"
+}
+
+// Size get file info Content-Language
+func (FileInfoMock) ContentLanguage() string {
+	return "Content-Language"
+}
+
+// Size get file info Content-Type
+func (FileInfoMock) ContentType() string {
+	return "Content-Type"
+}
+
+// Size get file info ETag
+func (FileInfoMock) ETag() string {
+	return "ETag"
+}
+
+// Size get file info Expires
+func (FileInfoMock) Expires() string {
+	return "Expires"
+}
+
+// Size get file info Last-Modified
+func (FileInfoMock) LastModified() time.Time {
+	return time.Now()
+}
