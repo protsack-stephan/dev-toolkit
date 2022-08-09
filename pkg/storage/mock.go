@@ -143,3 +143,103 @@ func (FileInfoMock) Expires() string {
 func (FileInfoMock) LastModified() time.Time {
 	return time.Now()
 }
+
+// ActiveStatus get ActiveStatus
+func (FileInfoMock) ActiveStatus() string {
+	return "activeStatus"
+}
+
+// BucketKeyEnabled get BucketKeyEnabled
+func (FileInfoMock) BucketKeyEnabled() bool {
+	return true
+}
+
+// DeleteMarker get DeleteMarker
+func (FileInfoMock) DeleteMarker() bool {
+	return true
+}
+
+// Expiration get Expiration
+func (FileInfoMock) Expiration() string {
+	return "expiration"
+}
+
+// Metadata get Metadata
+func (FileInfoMock) Metadata() map[string]*string {
+	return map[string]*string{}
+}
+
+// MissingMeta get MissingMeta
+func (FileInfoMock) MissingMeta() int64 {
+	return 1
+}
+
+// ObjectLockLegalHoldStatus get ObjectLockLegalHoldStatus
+func (FileInfoMock) ObjectLockLegalHoldStatus() string {
+	return "objectLockLegalHoldStatus"
+}
+
+// ObjectLockMode get ObjectLockMode
+func (FileInfoMock) ObjectLockMode() string {
+	return "objectLockMode"
+}
+
+// ObjectLockRetainUntilDate get ObjectLockRetainUntilDate
+func (FileInfoMock) ObjectLockRetainUntilDate() time.Time {
+	return time.Now()
+}
+
+// PartsCount get PartsCount
+func (FileInfoMock) PartsCount() int64 {
+	return 1
+}
+
+// ReplicationStatus get ReplicationStatus
+func (FileInfoMock) ReplicationStatus() string {
+	return "replicationStatus"
+}
+
+// RequestCharged get RequestCharged
+func (FileInfoMock) RequestCharged() string {
+	return "requestCharged"
+}
+
+// Restore get Restore
+func (FileInfoMock) Restore() string {
+	return "restore"
+}
+
+// SSECustomerAlgorithm get SSECustomerAlgorithm
+func (FileInfoMock) SSECustomerAlgorithm() string {
+	return "sseCustomerAlgorithm"
+}
+
+// SSECustomerKeyMD5 get SSECustomerKeyMD5
+func (FileInfoMock) SSECustomerKeyMD5() string {
+	return "sseCustomerKeyMD5"
+}
+
+// SSEKMSKeyId get SSEKMSKeyId
+func (FileInfoMock) SSEKMSKeyId() string {
+	return "sseKMSKeyId"
+}
+
+// ServerSideEncryption get ServerSideEncryption
+func (FileInfoMock) ServerSideEncryption() string {
+	return "serverSideEncryption"
+}
+
+// StorageClass get StorageClass
+func (FileInfoMock) StorageClass() string {
+	return "storageClass"
+}
+
+// VersionId get VersionId
+func (FileInfoMock) VersionId() string {
+	return "versionId"
+}
+
+// WebsiteRedirectLocation get WebsiteRedirectLocation
+func (FileInfoMock) WebsiteRedirectLocation() string {
+	return "websiteRedirectLocation"
+}
