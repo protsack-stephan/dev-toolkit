@@ -304,36 +304,127 @@ func (s *Storage) Stat(path string) (storage.FileInfo, error) {
 		return nil, err
 	}
 
-	return &FileInfo{
-		size:                      *out.ContentLength,
-		acceptRanges:              *out.AcceptRanges,
-		activeStatus:              *out.ArchiveStatus,
-		cacheControl:              *out.CacheControl,
-		contentDisposition:        *out.ContentDisposition,
-		contentEncoding:           *out.ContentEncoding,
-		contentLanguage:           *out.ContentLanguage,
-		contentType:               *out.ContentType,
-		eTag:                      *out.ETag,
-		expires:                   *out.Expires,
-		lastModified:              *out.LastModified,
-		bucketKeyEnabled:          *out.BucketKeyEnabled,
-		deleteMarker:              *out.DeleteMarker,
-		expiration:                *out.Expiration,
-		metadata:                  out.Metadata,
-		missingMeta:               *out.MissingMeta,
-		objectLockLegalHoldStatus: *out.ObjectLockLegalHoldStatus,
-		objectLockMode:            *out.ObjectLockMode,
-		objectLockRetainUntilDate: *out.ObjectLockRetainUntilDate,
-		partsCount:                *out.PartsCount,
-		replicationStatus:         *out.ReplicationStatus,
-		requestCharged:            *out.RequestCharged,
-		restore:                   *out.Restore,
-		sseCustomerAlgorithm:      *out.SSECustomerAlgorithm,
-		sseCustomerKeyMD5:         *out.SSECustomerKeyMD5,
-		sseKMSKeyId:               *out.SSEKMSKeyId,
-		serverSideEncryption:      *out.ServerSideEncryption,
-		storageClass:              *out.StorageClass,
-		versionId:                 *out.VersionId,
-		websiteRedirectLocation:   *out.WebsiteRedirectLocation,
-	}, nil
+	file := new(FileInfo)
+
+	if out.AcceptRanges != nil {
+		file.acceptRanges = *out.AcceptRanges
+	}
+
+	if out.ArchiveStatus != nil {
+		file.activeStatus = *out.ArchiveStatus
+	}
+
+	if out.CacheControl != nil {
+		file.cacheControl = *out.CacheControl
+	}
+
+	if out.ContentDisposition != nil {
+		file.contentDisposition = *out.ContentDisposition
+	}
+
+	if out.ContentEncoding != nil {
+		file.contentEncoding = *out.ContentEncoding
+	}
+
+	if out.ContentLanguage != nil {
+		file.contentLanguage = *out.ContentLanguage
+	}
+
+	if out.ContentLength != nil {
+		file.size = *out.ContentLength
+	}
+
+	if out.ContentType != nil {
+		file.contentType = *out.ContentType
+	}
+
+	if out.ETag != nil {
+		file.eTag = *out.ETag
+	}
+
+	if out.Expires != nil {
+		file.expires = *out.Expires
+	}
+
+	if out.Expiration != nil {
+		file.expiration = *out.Expiration
+	}
+
+	if out.LastModified != nil {
+		file.lastModified = *out.LastModified
+	}
+
+	if out.BucketKeyEnabled != nil {
+		file.bucketKeyEnabled = *out.BucketKeyEnabled
+	}
+
+	if out.DeleteMarker != nil {
+		file.deleteMarker = *out.DeleteMarker
+	}
+
+	if out.Metadata != nil {
+		file.metadata = out.Metadata
+	}
+
+	if out.MissingMeta != nil {
+		file.missingMeta = *out.MissingMeta
+	}
+
+	if out.ObjectLockLegalHoldStatus != nil {
+		file.objectLockLegalHoldStatus = *out.ObjectLockLegalHoldStatus
+	}
+
+	if out.ObjectLockMode != nil {
+		file.objectLockMode = *out.ObjectLockMode
+	}
+
+	if out.ObjectLockRetainUntilDate != nil {
+		file.objectLockRetainUntilDate = *out.ObjectLockRetainUntilDate
+	}
+
+	if out.PartsCount != nil {
+		file.partsCount = *out.PartsCount
+	}
+
+	if out.ReplicationStatus != nil {
+		file.replicationStatus = *out.ReplicationStatus
+	}
+
+	if out.RequestCharged != nil {
+		file.requestCharged = *out.RequestCharged
+	}
+
+	if out.Restore != nil {
+		file.restore = *out.Restore
+	}
+
+	if out.SSECustomerAlgorithm != nil {
+		file.sseCustomerAlgorithm = *out.SSECustomerAlgorithm
+	}
+
+	if out.SSECustomerKeyMD5 != nil {
+		file.sseCustomerKeyMD5 = *out.SSECustomerKeyMD5
+	}
+
+	if out.SSEKMSKeyId != nil {
+		file.sseKMSKeyId = *out.SSEKMSKeyId
+	}
+
+	if out.ServerSideEncryption != nil {
+		file.serverSideEncryption = *out.ServerSideEncryption
+	}
+
+	if out.StorageClass != nil {
+		file.storageClass = *out.StorageClass
+	}
+
+	if out.VersionId != nil {
+		file.versionId = *out.VersionId
+	}
+
+	if out.WebsiteRedirectLocation != nil {
+		file.websiteRedirectLocation = *out.WebsiteRedirectLocation
+	}
+
+	return file, nil
 }
