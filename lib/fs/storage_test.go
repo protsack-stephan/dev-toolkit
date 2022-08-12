@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -35,7 +35,7 @@ func compareFileContent(store *Storage, filePath string, content []byte) error {
 	}
 
 	defer body.Close()
-	data, err := ioutil.ReadAll(body)
+	data, err := io.ReadAll(body)
 
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func TestStorage(t *testing.T) {
 		assert.NoError(err)
 		defer body.Close()
 
-		data, err := ioutil.ReadAll(body)
+		data, err := io.ReadAll(body)
 		assert.NoError(err)
 		assert.Equal(storageTestData, data)
 	})
@@ -129,7 +129,7 @@ func TestStorage(t *testing.T) {
 		assert.NoError(err)
 		defer body.Close()
 
-		data, err := ioutil.ReadAll(body)
+		data, err := io.ReadAll(body)
 		assert.NoError(err)
 		assert.Equal(storageTestData, data)
 	})
