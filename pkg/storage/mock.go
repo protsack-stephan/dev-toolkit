@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"time"
 )
 
@@ -53,12 +52,12 @@ func (Mock) Create(path string) (io.ReadWriteCloser, error) {
 
 // Get get object from storage
 func (Mock) Get(path string) (io.ReadCloser, error) {
-	return ioutil.NopCloser(bytes.NewReader([]byte{})), nil
+	return io.NopCloser(bytes.NewReader([]byte{})), nil
 }
 
 // GetWithContext get object from storage
 func (Mock) GetWithContext(ctx context.Context, path string) (io.ReadCloser, error) {
-	return ioutil.NopCloser(bytes.NewReader([]byte{})), nil
+	return io.NopCloser(bytes.NewReader([]byte{})), nil
 }
 
 // Put object into storage

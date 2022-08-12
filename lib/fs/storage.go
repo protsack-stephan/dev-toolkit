@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -107,13 +106,13 @@ func (s Storage) Copy(src string, dst string, options ...map[string]interface{})
 		}
 	}
 
-	input, err := ioutil.ReadFile(src)
+	input, err := os.ReadFile(src)
 
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(dst, input, fs.FileMode(mode))
+	return os.WriteFile(dst, input, fs.FileMode(mode))
 }
 
 // CopyWithContext copies a file.
@@ -178,13 +177,13 @@ func (s Storage) Put(path string, body io.Reader) error {
 		return err
 	}
 
-	buff, err := ioutil.ReadAll(body)
+	buff, err := io.ReadAll(body)
 
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(loc, buff, 0766)
+	return os.WriteFile(loc, buff, 0766)
 }
 
 // PutWithContext object into storage
