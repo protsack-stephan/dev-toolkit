@@ -19,8 +19,7 @@ import (
 	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
-const maxUploadParts = 20000
-const partSize = 1024 * 1024 * 5 * 2
+const partSize = 1024 * 1024 * 5 * 5
 
 const maxUploadSizeBytes = 4294967296
 
@@ -61,7 +60,6 @@ func NewStorage(ses *session.Session, bucket string) *Storage {
 		s3:     s3.New(ses),
 		bucket: bucket,
 		uploader: s3manager.NewUploader(ses, func(upl *s3manager.Uploader) {
-			upl.MaxUploadParts = maxUploadParts
 			upl.PartSize = partSize
 		}),
 	}
