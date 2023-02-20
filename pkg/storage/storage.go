@@ -23,6 +23,7 @@ type Storage interface {
 	Deleter
 	DeleterWithContext
 	Stater
+	Selector
 }
 
 // Lister get the contents of the path
