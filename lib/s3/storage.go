@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -346,88 +345,68 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 
 // Select filters the contents of an object based on SQL statement. In the request, along with the SQL expression, you must also specify a data serialization format (JSON, CSV, or Apache Parquet) of the object.
 // S3 uses this format to parse object data into records, and returns only records that match the specified SQL expression. You must also specify the data serialization format for the response.
-func (s *Storage) Select(path string, dst string, options ...map[string]interface{}) error {
+func (s *Storage) Select(path string, query string, options ...map[string]interface{}) (string, error) {
 	bucket := s.bucket
-	que := squirrel.Select("*").From("S3Object as main")
 
+	ins := &s3.InputSerialization{
+		JSON: &s3.JSONInput{
+			Type: aws.String(s3.JSONTypeLines),
+		},
+	}
+
+	ops := &s3.OutputSerialization{
+		JSON: &s3.JSONOutput{
+			RecordDelimiter: aws.String(","),
+		},
+	}
+
+	// fmt.Println(ins, ops, sql)
 	for _, opt := range options {
-		if v, ok := opt["bucket"]; ok {
-			if bkt, ok := v.(string); ok {
-				bucket = bkt
+
+		if v, ok := opt["in"]; ok {
+			if srl, ok := v.(*s3.InputSerialization); ok {
+				ins = srl
+			}
+		}
+
+		if v, ok := opt["out"]; ok {
+			if srl, ok := v.(*s3.OutputSerialization); ok {
+				ops = srl
 			}
 		}
 	}
 
-	hr, err := s.s3.HeadObject(&s3.HeadObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(src),
+	res, err := s.s3.SelectObjectContent(&s3.SelectObjectContentInput{
+		Bucket:              aws.String(bucket),
+		Key:                 aws.String(path),
+		ExpressionType:      aws.String(s3.ExpressionTypeSql),
+		Expression:          aws.String(query),
+		InputSerialization:  ins,
+		OutputSerialization: ops,
 	})
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if *hr.ContentLength <= maxUploadSizeBytes {
-		_, err = s.s3.CopyObject(&s3.CopyObjectInput{
-			Bucket:     aws.String(bucket),
-			CopySource: aws.String(fmt.Sprintf("%s/%s", s.bucket, src)),
-			Key:        aws.String(dst),
-		})
+	defer res.EventStream.Close()
 
-		return err
+	if err = res.EventStream.Err(); err != nil {
+		return "", err
 	}
 
-	cmr, err := s.s3.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(dst),
-	})
+	bdr := strings.Builder{}
 
-	if err != nil {
-		return err
-	}
-
-	cmu := &s3.CompletedMultipartUpload{}
-	maxPart := int(math.Ceil(float64(*hr.ContentLength) / float64(maxUploadSizeBytes)))
-
-	for prt := 0; prt < maxPart; prt++ {
-		from := prt * maxUploadSizeBytes
-		to := (prt * maxUploadSizeBytes) + maxUploadSizeBytes
-
-		if prt != 0 {
-			from += 1
+	for evt := range res.EventStream.Reader.Events() {
+		switch evt := evt.(type) {
+		case *s3.RecordsEvent:
+			_, _ = bdr.WriteString(string(evt.Payload))
 		}
-
-		if to > int(*hr.ContentLength) {
-			to = int(*hr.ContentLength) - 1
-		}
-
-		upr, err := s.s3.UploadPartCopy(&s3.UploadPartCopyInput{
-			Bucket:          aws.String(bucket),
-			CopySource:      aws.String(fmt.Sprintf("%s/%s", bucket, src)),
-			CopySourceRange: aws.String(fmt.Sprintf("bytes=%d-%d", from, to)),
-			Key:             aws.String(dst),
-			PartNumber:      aws.Int64(int64(prt) + 1),
-			UploadId:        aws.String(*cmr.UploadId),
-		})
-
-		if err != nil {
-			return err
-		}
-
-		cmu.Parts = append(cmu.Parts, &s3.CompletedPart{
-			ETag:       upr.CopyPartResult.ETag,
-			PartNumber: aws.Int64(int64(prt) + 1),
-		})
 	}
 
-	_, err = s.s3.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
-		Bucket:          aws.String(bucket),
-		Key:             aws.String(dst),
-		UploadId:        aws.String(*cmr.UploadId),
-		MultipartUpload: cmu,
-	})
-
-	return err
+	return strings.TrimSuffix(
+		strings.TrimSuffix(bdr.String(), "\n"),
+		","), nil
 }
 
 // Create for create interface

@@ -57,6 +57,12 @@ type CopierWithContext interface {
 	CopyWithContext(ctx context.Context, src string, dst string, options ...map[string]interface{}) error
 }
 
+// Copier copies an object from the a path in a bucket to another path in the same or different bucket.
+// 'src' and 'dst' are absolute paths of the file.
+type Selector interface {
+	Select(path string, options ...map[string]interface{}) (string, error)
+}
+
 // Creator create newfile or open current and truncate
 type Creator interface {
 	Create(path string) (io.ReadWriteCloser, error)
