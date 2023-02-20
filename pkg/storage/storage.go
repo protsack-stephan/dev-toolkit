@@ -61,7 +61,7 @@ type CopierWithContext interface {
 // Copier copies an object from the a path in a bucket to another path in the same or different bucket.
 // 'src' and 'dst' are absolute paths of the file.
 type Selector interface {
-	Select(path string, options ...map[string]interface{}) (string, error)
+	Select(path string, query string, options ...map[string]interface{}) (string, error)
 }
 
 // Creator create newfile or open current and truncate
