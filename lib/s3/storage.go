@@ -395,19 +395,22 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 	if err = res.EventStream.Err(); err != nil {
 		return "", err
 	}
-
+	fmt.Println("res.GoString() : ", res.GoString())
 	bdr := strings.Builder{}
 
 	for evt := range res.EventStream.Reader.Events() {
+		spew.Dump(evt)
 		switch evt := evt.(type) {
 		case *s3.RecordsEvent:
-			fmt.Println("event: ", string(evt.Payload))
+			// fmt.Println("event: ", string(evt.Payload))
 			_, _ = bdr.WriteString(string(evt.Payload))
 		}
 	}
 
 	// return []byte(fmt.Sprintf("[%s]", strings.TrimSuffix(strings.TrimSuffix(bdr.String(), "\n"), ","))), nil
+	fmt.Println("----------------------")
 	return bdr.String(), nil
+
 }
 
 // Create for create interface
