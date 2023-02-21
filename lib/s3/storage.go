@@ -357,7 +357,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 
 	ops := &s3.OutputSerialization{
 		JSON: &s3.JSONOutput{
-			RecordDelimiter: aws.String(","),
+			// RecordDelimiter: aws.String(","),
 		},
 	}
 
@@ -384,6 +384,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 		Expression:          aws.String(query),
 		InputSerialization:  ins,
 		OutputSerialization: ops,
+		// OutputSerialization: &xs3.JSONOutput,
 	})
 
 	if err != nil {
