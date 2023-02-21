@@ -386,13 +386,13 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 	})
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer res.EventStream.Close()
 
 	if err = res.EventStream.Err(); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	bdr := strings.Builder{}
@@ -404,7 +404,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 		}
 	}
 
-	return []byte(fmt.Sprintf("[%s]", strings.TrimSuffix(strings.TrimSuffix(bdr.String(), "\n"), ","))), nil
+	// return []byte(fmt.Sprintf("[%s]", strings.TrimSuffix(strings.TrimSuffix(bdr.String(), "\n"), ","))), nil
 	return bdr.String(), nil
 }
 
