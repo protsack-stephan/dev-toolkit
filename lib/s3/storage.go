@@ -345,7 +345,7 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 
 // Select filters the contents of an object based on SQL statement. In the request, along with the SQL expression, you must also specify a data serialization format (JSON, CSV, or Apache Parquet) of the object.
 // S3 uses this format to parse object data into records, and returns only records that match the specified SQL expression. You must also specify the data serialization format for the response.
-func (s *Storage) Select(path string, query string, options ...map[string]interface{}) ([]byte, error) {
+func (s *Storage) Select(path string, query string, options ...map[string]interface{}) (string, error) {
 	bucket := s.bucket
 
 	ins := &s3.InputSerialization{
@@ -404,9 +404,8 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 		}
 	}
 
-	return []byte(strings.TrimSuffix(
-		strings.TrimSuffix(bdr.String(), "\n"),
-		",")), nil
+	return []byte(fmt.Sprintf("[%s]", strings.TrimSuffix(strings.TrimSuffix(bdr.String(), "\n"), ","))), nil
+	return bdr.String(), nil
 }
 
 // Create for create interface
