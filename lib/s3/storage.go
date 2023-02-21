@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	s3manager "github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
@@ -388,7 +389,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 	if err != nil {
 		return "", err
 	}
-
+	spew.Dump(res)
 	defer res.EventStream.Close()
 
 	if err = res.EventStream.Err(); err != nil {
@@ -400,6 +401,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 	for evt := range res.EventStream.Reader.Events() {
 		switch evt := evt.(type) {
 		case *s3.RecordsEvent:
+			fmt.Println("event: ", string(evt.Payload))
 			_, _ = bdr.WriteString(string(evt.Payload))
 		}
 	}
