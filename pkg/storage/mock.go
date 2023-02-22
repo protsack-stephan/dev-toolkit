@@ -45,6 +45,16 @@ func (Mock) CopyWithContext(ctx context.Context, src string, dst string, options
 	return nil
 }
 
+// Select filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+func (Mock) Select(path string, query string, options ...map[string]interface{}) (string, error) {
+	return "", nil
+}
+
+// SelectWithContext filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+func (Mock) SelectWithContext(ctx context.Context, path string, query string, options ...map[string]interface{}) (string, error) {
+	return "", nil
+}
+
 // Create for create object in storage
 func (Mock) Create(path string) (io.ReadWriteCloser, error) {
 	return nil, nil
