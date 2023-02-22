@@ -120,6 +120,16 @@ func (s Storage) CopyWithContext(_ context.Context, src string, dst string, opti
 	return s.Copy(src, dst, options...)
 }
 
+// Select not implemented.
+func (s Storage) Select(_ string, _ string, options ...map[string]interface{}) (string, error) {
+	return "", nil
+}
+
+// SelectWithContext not implemented.
+func (s Storage) SelectWithContext(ctx context.Context, _ string, _ string, options ...map[string]interface{}) (string, error) {
+	return "", nil
+}
+
 // Create create new file or open existing one and truncate it
 func (s Storage) Create(path string) (io.ReadWriteCloser, error) {
 	loc, err := s.fullPath(path)
