@@ -16,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	s3manager "github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/protsack-stephan/dev-toolkit/pkg/storage"
 )
 
@@ -344,10 +343,10 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 	return err
 }
 
-// Select filters the contents of an object based on SQL statement. In the request, along with the SQL expression, you must also specify a data serialization format (JSON, CSV, or Apache Parquet) of the object.
-// S3 uses this format to parse object data into records, and returns only records that match the specified SQL expression. You must also specify the data serialization format for the response.
+// Select filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+// You can specify a data serialization format (JSON, CSV, or Apache Parquet) of the object, using options["in"]. Use options["out"] to specify the data serialization format for the response.
 func (s *Storage) Select(path string, query string, options ...map[string]interface{}) (string, error) {
-	bucket := s.bucket
+	bkt := s.bucket
 
 	ins := &s3.InputSerialization{
 		JSON: &s3.JSONInput{
@@ -361,9 +360,7 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 		},
 	}
 
-	// fmt.Println(ins, ops, sql)
 	for _, opt := range options {
-
 		if v, ok := opt["in"]; ok {
 			if srl, ok := v.(*s3.InputSerialization); ok {
 				ins = srl
@@ -378,40 +375,34 @@ func (s *Storage) Select(path string, query string, options ...map[string]interf
 	}
 
 	res, err := s.s3.SelectObjectContent(&s3.SelectObjectContentInput{
-		Bucket:              aws.String(bucket),
+		Bucket:              aws.String(bkt),
 		Key:                 aws.String(path),
 		ExpressionType:      aws.String(s3.ExpressionTypeSql),
 		Expression:          aws.String(query),
 		InputSerialization:  ins,
 		OutputSerialization: ops,
-		// OutputSerialization: &xs3.JSONOutput,
 	})
 
 	if err != nil {
 		return "", err
 	}
-	spew.Dump(res)
+
 	defer res.EventStream.Close()
 
 	if err = res.EventStream.Err(); err != nil {
 		return "", err
 	}
-	fmt.Println("res.GoString() : ", res.GoString())
+
 	bdr := strings.Builder{}
 
 	for evt := range res.EventStream.Reader.Events() {
-		spew.Dump(evt)
 		switch evt := evt.(type) {
 		case *s3.RecordsEvent:
-			// fmt.Println("event: ", string(evt.Payload))
 			_, _ = bdr.WriteString(string(evt.Payload))
 		}
 	}
 
-	// return []byte(fmt.Sprintf("[%s]", strings.TrimSuffix(strings.TrimSuffix(bdr.String(), "\n"), ","))), nil
-	fmt.Println("----------------------")
 	return bdr.String(), nil
-
 }
 
 // Create for create interface
