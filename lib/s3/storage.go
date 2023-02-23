@@ -343,6 +343,130 @@ func (s *Storage) CopyWithContext(ctx aws.Context, src string, dst string, optio
 	return err
 }
 
+// Select filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+// You can specify a data serialization format (JSON, CSV, or Apache Parquet) of the object, using options["in"]. Use options["out"] to specify the data serialization format for the response.
+func (s *Storage) Select(path string, query string, options ...map[string]interface{}) (string, error) {
+	bkt := s.bucket
+
+	ins := &s3.InputSerialization{
+		JSON: &s3.JSONInput{
+			Type: aws.String(s3.JSONTypeLines),
+		},
+	}
+
+	ops := &s3.OutputSerialization{
+		JSON: &s3.JSONOutput{
+			RecordDelimiter: aws.String(","),
+		},
+	}
+
+	for _, opt := range options {
+		if v, ok := opt["in"]; ok {
+			if srl, ok := v.(*s3.InputSerialization); ok {
+				ins = srl
+			}
+		}
+
+		if v, ok := opt["out"]; ok {
+			if srl, ok := v.(*s3.OutputSerialization); ok {
+				ops = srl
+			}
+		}
+	}
+
+	res, err := s.s3.SelectObjectContent(&s3.SelectObjectContentInput{
+		Bucket:              aws.String(bkt),
+		Key:                 aws.String(path),
+		ExpressionType:      aws.String(s3.ExpressionTypeSql),
+		Expression:          aws.String(query),
+		InputSerialization:  ins,
+		OutputSerialization: ops,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	defer res.EventStream.Close()
+
+	if err = res.EventStream.Err(); err != nil {
+		return "", err
+	}
+
+	bdr := strings.Builder{}
+
+	for evt := range res.EventStream.Reader.Events() {
+		switch evt := evt.(type) {
+		case *s3.RecordsEvent:
+			_, _ = bdr.WriteString(string(evt.Payload))
+		}
+	}
+
+	return bdr.String(), nil
+}
+
+// SelectWithContext filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+// You can specify a data serialization format (JSON, CSV, or Apache Parquet) of the object, using options["in"]. Use options["out"] to specify the data serialization format for the response.
+func (s *Storage) SelectWithContext(ctx aws.Context, path string, query string, options ...map[string]interface{}) (string, error) {
+	bkt := s.bucket
+
+	ins := &s3.InputSerialization{
+		JSON: &s3.JSONInput{
+			Type: aws.String(s3.JSONTypeLines),
+		},
+	}
+
+	ops := &s3.OutputSerialization{
+		JSON: &s3.JSONOutput{
+			RecordDelimiter: aws.String(","),
+		},
+	}
+
+	for _, opt := range options {
+		if v, ok := opt["in"]; ok {
+			if srl, ok := v.(*s3.InputSerialization); ok {
+				ins = srl
+			}
+		}
+
+		if v, ok := opt["out"]; ok {
+			if srl, ok := v.(*s3.OutputSerialization); ok {
+				ops = srl
+			}
+		}
+	}
+
+	res, err := s.s3.SelectObjectContentWithContext(ctx, &s3.SelectObjectContentInput{
+		Bucket:              aws.String(bkt),
+		Key:                 aws.String(path),
+		ExpressionType:      aws.String(s3.ExpressionTypeSql),
+		Expression:          aws.String(query),
+		InputSerialization:  ins,
+		OutputSerialization: ops,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	defer res.EventStream.Close()
+
+	if err = res.EventStream.Err(); err != nil {
+		return "", err
+	}
+
+	bdr := strings.Builder{}
+
+	for evt := range res.EventStream.Reader.Events() {
+		switch evt := evt.(type) {
+		case *s3.RecordsEvent:
+			_, _ = bdr.WriteString(string(evt.Payload))
+		}
+	}
+
+	return bdr.String(), nil
+}
+
 // Create for create interface
 func (s *Storage) Create(_ string) (io.ReadWriteCloser, error) {
 	return nil, errors.New("method unimplemented")

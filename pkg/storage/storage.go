@@ -23,6 +23,8 @@ type Storage interface {
 	Deleter
 	DeleterWithContext
 	Stater
+	Selector
+	SelectorWithContext
 }
 
 // Lister get the contents of the path
@@ -55,6 +57,18 @@ type Copier interface {
 // 'src' and 'dst' are absolute paths of the file.
 type CopierWithContext interface {
 	CopyWithContext(ctx context.Context, src string, dst string, options ...map[string]interface{}) error
+}
+
+// Selector filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+// You can specify a data serialization format (JSON, CSV, or Apache Parquet) of the object, using options["in"]. Use options["out"] to specify the data serialization format for the response.
+type Selector interface {
+	Select(path string, query string, options ...map[string]interface{}) (string, error)
+}
+
+// SelectorWithContext filters the contents of an object based on SQL statement, and returns only records that match the specified SQL expression.
+// You can specify a data serialization format (JSON, CSV, or Apache Parquet) of the object, using options["in"]. Use options["out"] to specify the data serialization format for the response.
+type SelectorWithContext interface {
+	SelectWithContext(ctx context.Context, path string, query string, options ...map[string]interface{}) (string, error)
 }
 
 // Creator create newfile or open current and truncate
