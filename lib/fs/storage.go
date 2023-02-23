@@ -126,7 +126,7 @@ func (s Storage) Select(_ string, _ string, options ...map[string]interface{}) (
 }
 
 // SelectWithContext not implemented.
-func (s Storage) SelectWithContext(ctx context.Context, _ string, _ string, options ...map[string]interface{}) (string, error) {
+func (s Storage) SelectWithContext(_ context.Context, _ string, _ string, options ...map[string]interface{}) (string, error) {
 	return "", nil
 }
 
